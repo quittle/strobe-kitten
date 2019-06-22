@@ -2,7 +2,6 @@ package strobe.kitten;
 
 import android.app.Activity;
 import android.content.SharedPreferences;
-import android.content.SharedPreferences.Editor;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.widget.RadioGroup.OnCheckedChangeListener;
@@ -32,13 +31,13 @@ public class Settings extends Activity {
         sb.setProgress(rate);
         rg.check(sp.getBoolean(PREF_SHOW_KITTEN, PREF_SHOW_KITTEN_DEFAULT) ? R.id.kitty : R.id.cat);
 		TextView text = findViewById(R.id.rate);
-		text.setText(rate + "%");
+		text.setText(getString(R.string.number_percent, rate));
 
         sb.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
 			@Override
 			public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
 				TextView text = findViewById(R.id.rate);
-				text.setText(progress + "%");
+				text.setText(getString(R.string.number_percent, progress));
 			}
 
 			@Override

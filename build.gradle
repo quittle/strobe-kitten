@@ -17,3 +17,5 @@ allprojects {
         google()
     }
 }
+
+defaultTasks 'assemble', 'check'

@@ -5,10 +5,9 @@
     android:orientation="vertical" >
 
     <TextView
-        android:id="@+id/textView1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Strobe Speed (20% by default)" />
+        android:text="@string/settings_strobe_speed" />
 
     <SeekBar
         android:id="@+id/seekBar"
@@ -17,11 +16,7 @@
         android:max="100"
         android:padding="10dp"/>
     <TextView
-        android:id="@+id/rate"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"/>
-    <TextView
-        android:id="@+id/rated"
+		android:id="@+id/rate"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"/>
     <RadioGroup
@@ -32,10 +27,14 @@
 
 	    <RadioButton
 	    	android:id="@+id/kitty"
-	    	android:text="Kitten" />
+			android:layout_height="wrap_content"
+			android:layout_width="wrap_content"
+	    	android:text="@string/settings_preference_kitten" />
 	    <RadioButton
 	    	android:id="@+id/cat"
-	    	android:text="Cat" />
+			android:layout_height="wrap_content"
+			android:layout_width="wrap_content"
+	    	android:text="@string/settings_preference_cat" />
 
     </RadioGroup>
 

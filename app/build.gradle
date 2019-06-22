@@ -22,4 +22,9 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard.cfg'
         }
     }
+
+    lintOptions {
+        warningsAsErrors true
+        disable 'IconLauncherShape','IconLocation', 'IconMissingDensityFolder'
+    }
 }
