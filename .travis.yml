@@ -1,0 +1,7 @@
+language: java
+
+# Disable default install task
+install: true
+
+script:
+- ./gradlew
