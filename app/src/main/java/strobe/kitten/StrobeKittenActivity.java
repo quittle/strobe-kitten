@@ -1,113 +1,166 @@
 package strobe.kitten;
 
-import strobe.kitten.R;
-
 import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.res.Resources;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.CountDownTimer;
+import android.preference.PreferenceManager;
 import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.Toast;
 
 public class StrobeKittenActivity extends Activity {
-	final int SYSTEM_UI_FLAG_HIDE_NAVIGATION = 2;
-	CountDownTimer ct;
-	boolean paused = true;
-	boolean kitten;
+    private static final String BUNDLE_KEY_PAUSED = "paused";
+    private static final String BUNDLE_KEY_FRAME = "frame";
+
+    CountDownTimer mCountDownTimer;
+    boolean mPaused = false;
+    int mFrame = 1;
+    boolean mShowKitten;
+    SharedPreferences mSharedPreferences;
+    ImageView mKittenView;
+    LinearLayout mLayoutRoot;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.main);
+
+        mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        mLayoutRoot = findViewById(R.id.layout_root);
+        mKittenView = findViewById(R.id.kitten);
+
+        if (savedInstanceState != null) {
+            mPaused = savedInstanceState.getBoolean(BUNDLE_KEY_PAUSED, mPaused);
+            mFrame = savedInstanceState.getInt(BUNDLE_KEY_FRAME, mFrame);
+        }
+
+        renderFrame(mFrame);
+
+        final View.OnClickListener onClickListener = new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                togglePaused();
+            }
+        };
+
+        mLayoutRoot.setOnClickListener(onClickListener);
+        mKittenView.setOnClickListener(onClickListener);
+
+        final View.OnLongClickListener onLongClickListener = new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View view) {
+                startActivity(new Intent(view.getContext(), Settings.class));
+                return true;
+            }
+        };
+
+        mLayoutRoot.setOnLongClickListener(onLongClickListener);
+        mKittenView.setOnLongClickListener(onLongClickListener);
     }
-    
+
+    @Override
+    public void onSaveInstanceState(final Bundle savedInstanceState) {
+        savedInstanceState.putBoolean(BUNDLE_KEY_PAUSED, mPaused);
+        savedInstanceState.putInt(BUNDLE_KEY_FRAME, mFrame);
+    }
+
     @Override
     public void onResume(){
-    	super.onResume();
-    	
-    	SharedPreferences sp = getSharedPreferences("settings", MODE_WORLD_READABLE);
-    	if(!sp.getBoolean("warned", false)){
-    		startActivity(new Intent(getApplicationContext(), Warning.class));
-    	}
-    	kitten = sp.getBoolean("kitten", true);
-    	pause(null);
-    	ct.start();
+        super.onResume();
+
+        final boolean warningShown = mSharedPreferences
+                .getBoolean(Settings.PREF_WARNING_SHOWED, Settings.PREF_WARNING_SHOWED_DEFAULT);
+
+        if (!warningShown) {
+            startActivity(new Intent(this, Warning.class));
+        }
+
+        mShowKitten = mSharedPreferences.getBoolean(
+                Settings.PREF_SHOW_KITTEN, Settings.PREF_SHOW_KITTEN_DEFAULT);
+        renderFrame(mFrame);
+
+        if (!mPaused) {
+            resumeStrobe();
+        }
     }
-    
+
     @Override
     public void onPause(){
-    	super.onPause();
-    	paused = true;
-    	ct.cancel();
+        super.onPause();
+        pauseStrobe();
     }
-    
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.main, menu);
+        getMenuInflater().inflate(R.menu.main, menu);
         return true;
     }
-    
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-		startActivity(new Intent(getApplicationContext(), Settings.class));
-		return true;
+        startActivity(new Intent(this, Settings.class));
+        return true;
     }
-    
-    public void pause(View v){
-    	if(paused){
-    	   	SharedPreferences sp = getSharedPreferences("settings", MODE_WORLD_READABLE);
-    		ct = new CountDownTimer(1000/Math.max(sp.getInt("rate", 10), 1),10000000){
 
-    			@Override
-    			public void onFinish() {
-    				imageSwitch();
-    				start();
-    			}
-
-    			@Override
-    			public void onTick(long millisUntilFinished) {
-    			}
-        		
-        	};
-    	   	ct.start();
-    	   	Toast.makeText(getApplicationContext(), "Strobing!", Toast.LENGTH_SHORT).show();
-        	paused = false;
-    	}
-    	else{
-    		ct.cancel();
-    	   	Toast.makeText(getApplicationContext(), "Paused!", Toast.LENGTH_SHORT).show();
-    		paused = true;
-    	}
+    private void togglePaused() {
+        if (mPaused) {
+            resumeStrobe();
+        } else {
+            pauseStrobe();
+        }
+        mPaused = !mPaused;
     }
-    
-    private void imageSwitch(){
-    	ImageView iv = (ImageView) findViewById(R.id.imageView1);
-    	LinearLayout ll = (LinearLayout) findViewById(R.id.ll);
-		Resources res = getResources();
-        if(((String)iv.getTag()).equals("1")){
-        	ll.setBackgroundColor(Color.BLACK);
-        	iv.setBackgroundColor(Color.BLACK);
-        	iv.setImageDrawable(res.getDrawable(kitten?R.drawable.kitten1:R.drawable.cat1));
-        	iv.invalidate();
-        	iv.refreshDrawableState();
-        	iv.setTag(String.valueOf("2"));
+
+    private void pauseStrobe() {
+        if (mCountDownTimer != null) {
+            mCountDownTimer.cancel();
         }
-        else{
-        	ll.setBackgroundColor(Color.WHITE);
-        	iv.setBackgroundColor(Color.WHITE);
-        	iv.setImageDrawable(res.getDrawable(kitten?R.drawable.kitten2:R.drawable.cat2));
-        	iv.invalidate();
-        	iv.refreshDrawableState();
-        	iv.setTag(String.valueOf("1"));
+    }
+
+    public void resumeStrobe() {
+        final int rate = mSharedPreferences.getInt(Settings.PREF_RATE, Settings.PREF_RATE_DEFAULT);
+        final int millisInFuture = 1000 / Math.max(rate, 1);
+        // This is recreated ever time to handle rate updates
+        mCountDownTimer = new CountDownTimer(millisInFuture, 10 * 1000 * 1000){
+            @Override
+            public void onFinish() {
+                switchImage();
+                start();
+            }
+
+            @Override
+            public void onTick(long millisUntilFinished) {}
+        };
+        mCountDownTimer.start();
+    }
+
+    private void switchImage() {
+        if (mFrame == 1) {
+            mFrame = 2;
+            renderFrame(2);
+        } else {
+            mFrame = 1;
+            renderFrame(1);
         }
+    }
+
+    private void renderFrame(int frame) {
+        if (frame == 1) {
+            mLayoutRoot.setBackgroundColor(Color.BLACK);
+            mKittenView.setBackgroundColor(Color.BLACK);
+            mKittenView.setImageResource(mShowKitten ? R.drawable.kitten1 : R.drawable.cat1);
+        } else if (frame == 2) {
+            mLayoutRoot.setBackgroundColor(Color.WHITE);
+            mKittenView.setBackgroundColor(Color.WHITE);
+            mKittenView.setImageResource(mShowKitten ? R.drawable.kitten2 : R.drawable.cat2);
+        }
+        mKittenView.invalidate();
+        mKittenView.refreshDrawableState();
     }
 }

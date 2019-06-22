@@ -36,7 +36,7 @@
 	    <RadioButton
 	    	android:id="@+id/cat"
 	    	android:text="Cat" />
-    	
+
     </RadioGroup>
 
 </LinearLayout>

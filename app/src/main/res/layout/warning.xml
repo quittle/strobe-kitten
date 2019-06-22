@@ -10,9 +10,10 @@
         android:layout_height="wrap_content"
         android:textSize="30dp"
         android:text="Warning, this app may cause seizures.  It flashes back and forth between black and white very quickly so if you believe you may be at risk, DO NOT CONTINUE." />
-
+
+
     <Button
-        android:id="@+id/button1"
+        android:id="@+id/continue_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="right"
