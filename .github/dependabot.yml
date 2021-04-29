@@ -1,0 +1,19 @@
+version: 2
+updates:
+- package-ecosystem: gradle
+  directory: "/"
+  schedule:
+    interval: monthly
+    time: "18:00"
+    timezone: Europe/London
+  open-pull-requests-limit: 99
+  reviewers:
+  - quittle
+  assignees:
+  - quittle
+  labels:
+  - dependencies
+  ignore:
+  - dependency-name: com.android.tools.build:gradle
+    versions:
+    - 4.1.2
