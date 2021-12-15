@@ -20,7 +20,7 @@ public class Warning extends Activity {
 			    final Context context = getApplicationContext();
                 PreferenceManager.getDefaultSharedPreferences(context).edit()
 				    .putBoolean(Settings.PREF_WARNING_SHOWED, true)
-				    .commit();
+				    .apply();
 				startActivity(new Intent(context, StrobeKittenActivity.class));
 			}
         });

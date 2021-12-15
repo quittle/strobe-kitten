@@ -47,7 +47,7 @@ public class Settings extends Activity {
 			public void onStopTrackingTouch(SeekBar seekBar) {
 				sp.edit()
 					.putInt(PREF_RATE, seekBar.getProgress())
-					.commit();
+					.apply();
 			}
 
         });
@@ -57,7 +57,7 @@ public class Settings extends Activity {
 			public void onCheckedChanged(RadioGroup group, int checkedId) {
 				sp.edit()
 					.putBoolean(PREF_SHOW_KITTEN, checkedId == R.id.kitty)
-					.commit();
+					.apply();
 			}
         });
     }
